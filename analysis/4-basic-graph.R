@@ -4,13 +4,15 @@ library(leaflet.extras)
 library(raster)
 library(igraph)
 
-debug <- T
+debug <- F
 
 # Define which track to work with
-gdl <- "18LX"
+# gdl <- "18LX"
 
 # Load static prob
+load(paste0("data/1_pressure/", gdl, "_pressure_prob.Rdata"))
 load(paste0("data/3_static/", gdl, "_static_prob.Rdata"))
+
 
 # Build the graph ----
 grl <- graph_create(static_prob,
@@ -20,12 +22,34 @@ grl <- graph_create(static_prob,
 # If you get an error with trimming, use geopressureviz from end of 3.static.R
 
 # Add probability of each edge
-grl$p <- grl$ps * flight_prob(grl$gs, method = "gamma", shape = 7, scale = 7)
+grl$p <- grl$ps * flight_prob(abs(grl$gs), method = "gamma", shape = 7, scale = 7, low_speed_fix = 40)
 
 
-
-
-
+# ind <- arrayInd(unique(grl$s), grl$sz)
+#
+# grl$gs[,ind==13]
+#
+#
+# tmp <- data.frame(s = grl$s, ps=grl$ps) %>%
+#   group_by(s) %>%
+#   summarise(ps=max(ps))
+#
+# tmp2 = arrayInd(tmp$s, grl$sz) %>%
+#   as.data.frame() %>%
+#   mutate(ps = tmp$ps,
+#          lon = grl$lon[V2],
+#          lat = grl$lat[V1]
+#          )
+#
+# tmp2 %>% filter(V3==27) %>%
+# ggplot(aes(x=lon,y=lat,fill=ps)) +
+#   geom_tile() +
+#   borders("world", colour = "black", size=0.1) +
+#   coord_equal() +
+#   coord_cartesian(
+#     xlim=c(gpr$extent_W, gpr$extent_E),
+#     ylim=c(gpr$extent_S, gpr$extent_N)
+#   )
 
 
 
@@ -57,6 +81,18 @@ path_sim <- graph_simulation(grl, nj = nj)
 
 
 if (debug) {
+
+  # Check speeed
+  edges <- graph_path2edge(shortest_path$id, grl)
+  edges_sim <- graph_path2edge(path_sim$id[1,], grl)
+
+  plot(abs(grl$gs[edges]))
+  plot(abs(grl$gs[edges_sim]))
+  plot(log(grl$ps[head(t(edges),-1)]))
+  plot(log(grl$ps[head(t(edges_sim),-1)]))
+
+  plot(log(grl$p[head(t(edges),-1)]))
+
 
   # Rapid visual check
   sta_duration <- unlist(lapply(static_prob_marginal, function(x) {

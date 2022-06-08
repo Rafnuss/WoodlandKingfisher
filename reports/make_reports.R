@@ -1,10 +1,11 @@
 # This script generate the reports and the website
 library(rmarkdown)
+library(tidyr)
+library(readxl)
 
 # Define the track to consider
-gdl_list <- c("18LX")
-# set <- read_excel("data/gdl_settings.xlsx")
-# gdl_list = set$gdl_id
+gdl_list <- read_excel("data/gpr_settings.xlsx") %>%
+  .$gdl_id
 
 # Define the report to produce
 report_list <- c("basic_trajectory", "technical_details")

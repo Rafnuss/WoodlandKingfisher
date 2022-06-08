@@ -1,23 +1,14 @@
-name: "GeoPressureTemplate"
+name: "Woodland Kingfisher"
 description: |
-  Template for GeoPressureR
+  Woodland Kingfisher
 output_dir: "../docs"
-title: "Template for GeoPressureR"
+title: "Woodland Kingfisher"
 navbar:
-  left:
-    - text: "Basic Trajectory"
-      menu:
-        - text: "18LX"
-          href: "/GeoPressureTemplate/basic_trajectory/18LX.html"
-    - text: "Technical Details"
-      menu:
-        - text: "18LX"
-          href: "/GeoPressureTemplate/technical_details/18LX.html"
   right:
     - icon: fa-envelope fa-lg
       href: mailto:<rafnuss@gmail.com>
     - icon: fa-github fa-lg
-      href: https://github.com/Rafnuss/GeoPressureTemplate
+      href: https://github.com/Rafnuss/WoodlandKingfisher
 
 output:
   distill::distill_article:

@@ -1,7 +1,7 @@
 ---
 site: distill::distill_website
 params:
-  gdl_id: "18LX"
+  gdl_id: "16LN"
 ---
 ---
 title: `r params$gdl_id`
@@ -18,6 +18,7 @@ library(dplyr)
 library(ggplot2)
 library(plotly)
 knitr::opts_chunk$set(echo = FALSE)
+load(paste0("../data/1_pressure/", params$gdl_id, "_pressure_prob.Rdata"))
 load(paste0("../data/2_light/", params$gdl_id, "_light_prob.Rdata"))
 load(paste0("../data/3_static/", params$gdl_id, "_static_prob.Rdata"))
 load(paste0("../data/4_basic_graph/", params$gdl_id, "_basic_graph.Rdata"))
@@ -33,12 +34,11 @@ Altitudes are computed based on pressure measurement of the geolocation, correct
 p <- ggplot() +
   # geom_line(data = pam$pressure, aes(x = date, y = obs), colour = "grey") +
   geom_line(data = do.call("rbind", shortest_path_timeserie), aes(x = date, y = altitude)) +
-  geom_line(data = do.call("rbind", shortest_path_timeserie) %>% filter(sta_id > 0), aes(x = date, y = altitude, col = factor(sta_id))) +
-  geom_vline(data = twl, aes(xintercept = twilight, linetype = ifelse(rise, "dashed", "solid"), color="grey"), lwd=0.1) +
+  geom_line(data = do.call("rbind", shortest_path_timeserie) %>% filter(sta_id > 0), aes(x = date, y = altitude, col=as.factor(sta_id))) +
+  geom_vline(data = twl, aes(xintercept = twilight, linetype = ifelse(rise, "dashed", "solid")), colour="grey", lwd=0.1) +
   theme_bw() +
-  scale_colour_manual(values = col) +
+  scale_colour_manual(values = pam$sta$col) +
   scale_y_continuous(name = "Altitude (m)")
-
 ggplotly(p, dynamicTicks = T) %>% layout(showlegend = F)
 ```
 
@@ -54,19 +54,20 @@ Click on the full-screen mode button on the top-left of the map to see more deta
 sta_duration <- unlist(lapply(static_prob_marginal, function(x) {
   as.numeric(difftime(metadata(x)$temporal_extent[2], metadata(x)$temporal_extent[1], units = "days"))
 }))
-pal <- colorFactor(col, as.factor(seq_len(length(col))))
+pal <- colorFactor(pam$sta$col, as.factor(seq_len(length(pam$sta$col))))
 m <- leaflet(width = "100%") %>%
   addProviderTiles(providers$Stamen.TerrainBackground) %>%
-  addFullscreenControl() %>%
-  addPolylines(lng = shortest_path$lon, lat = shortest_path$lat, opacity = 1, color = "#808080", weight = 3) %>%
-  addCircles(lng = shortest_path$lon, lat = shortest_path$lat, opacity = 1, color = pal(factor(shortest_path$sta_id, levels = pam$sta$sta_id)), weight = sta_duration^(0.3) * 10)
+  addFullscreenControl()
 
 for (i in seq_len(nrow(path_sim$lon))) {
   m <- m %>%
     addPolylines(lng = path_sim$lon[i, ], lat = path_sim$lat[i, ], opacity = 0.5, weight = 1, color = "#808080") %>%
-    addCircles(lng = path_sim$lon[i, ], lat = path_sim$lat[i, ], opacity = .7, weight = 1, color = pal(factor(shortest_path$sta_id, levels = pam$sta$sta_id)))
+    addCircles(lng = path_sim$lon[i, ], lat = path_sim$lat[i, ], opacity = .7, weight = 1, color = pam$sta$col)
 }
-m
+m %>%
+  addPolylines(lng = shortest_path$lon, lat = shortest_path$lat, opacity = 1, color = "#808080", weight = 3) %>%
+  addCircles(lng = shortest_path$lon, lat = shortest_path$lat, opacity = 1, color = pal(factor(shortest_path$sta_id)), weight = sta_duration^(0.3) * 10, popup = paste0("sta_id=", shortest_path$sta_id))
+
 ```
 
 ## Marginal probability map
@@ -80,12 +81,13 @@ l <- leaflet(width = "100%") %>%
   addFullscreenControl()
 for (i_r in seq_len(length(static_prob_marginal))) {
   i_s <- metadata(static_prob_marginal[[i_r]])$sta_id
+  i_ss <- which(shortest_path$sta_id==i_s)
   info <- metadata(static_prob_marginal[[i_r]])$temporal_extent
   info_str <- paste0(i_s, " | ", info[1], "->", info[2])
   li_s <- append(li_s, info_str)
   l <- l %>%
     addRasterImage(static_prob_marginal[[i_r]], colors = "OrRd", opacity = 0.8, group = info_str) %>%
-    addCircles(lng = shortest_path$lon[i_s], lat = shortest_path$lat[i_s], opacity = 1, color = "#000", weight = 10, group = info_str)
+    addCircles(lng = shortest_path$lon[i_ss], lat = shortest_path$lat[i_ss], opacity = 1, color = "#000", weight = 10, group = info_str)
 }
 l %>%
   addLayersControl(
@@ -94,3 +96,14 @@ l %>%
   ) %>%
   hideGroup(tail(li_s, length(li_s) - 1))
 ```
+
+Animated marginal map
+
+`r sprintf("![](figure_print/marginal_animation_%s.gif)",params$gdl_id)`
+
+## Expected stopover use
+Post breeding (spring, northward):
+`r sprintf("![](figure_print/expected_use/post_breeding_%s.png)",params$gdl_id)`
+
+Pre breeding (fall, southward):
+`r sprintf("![](figure_print/expected_use/post_breeding_%s.png)",params$gdl_id)`

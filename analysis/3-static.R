@@ -9,10 +9,10 @@ library(raster)
 library(dplyr)
 library(readxl)
 
-debug <- T
+debug <- F
 
-# Define the geolocator data logger id to use
-gdl <- "18LX"
+# Define which track to work with
+# gdl <- "18LX"
 
 # Load the pressure file, also contains set, pam, col
 load(paste0("data/1_pressure/", gdl, "_pressure_prob.Rdata"))
@@ -65,7 +65,14 @@ static_prob <- mapply(function(light, pressure, flight) {
   static_prob
 }, light_prob, pressure_prob, flight)
 
+# overwrite long stationay period
+if (gdl=="20IK"){
+  tmp <- as.matrix(static_prob[[27]])
+  tmp[seq(50,210),] <- 0
+  tmp[is.na(as.matrix(static_prob[[27]]))] <- NA
+  values(static_prob[[27]]) <- tmp
 
+}
 
 
 # Overwrite prob at calibration
@@ -99,7 +106,7 @@ if (!is.na(gpr$calib_2_start)) {
 
 # Get pressure timeserie at the best match of static
 path <- geopressure_map2path(static_prob)
-static_timeserie <- geopressure_ts_path(path, pam$pressure)
+# static_timeserie <- geopressure_ts_path(path, pam$pressure)
 
 
 if (debug) {
@@ -156,10 +163,8 @@ if (debug) {
 }
 
 ## Save
-save(pam,
-  col,
-  gpr,
+save(
   static_prob,
-  static_timeserie,
+  # static_timeserie,
   file = paste0("data/3_static/", gpr$gdl_id, "_static_prob.Rdata")
 )

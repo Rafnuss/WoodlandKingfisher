@@ -10,10 +10,10 @@ library(raster)
 library(readxl)
 
 # Set debug T to see all check and set to F once everything is correct
-debug <- T
+debug <- F
 
 # Define the geolocator data logger id to use
-gdl <- "18LX"
+# gdl <- "22NO" # "16LN" "16LO" "16LP" "20IK" "22NO"
 
 # Read its information from gpr_settings.xlsx
 gpr <- read_excel("data/gpr_settings.xlsx") %>%
@@ -27,27 +27,43 @@ pam <- pam_read(paste0("data/0_PAM/", gpr$gdl_id),
   crop_end = gpr$crop_end
 )
 
-# Auto classification + writing, only done the first time
-if (!file.exists(paste0("data/1_pressure/labels/", gpr$gdl_id, "_act_pres-labeled.csv"))) {
-  pam <- pam_classify(pam)
-  trainset_write(pam, "data/1_pressure/labels/")
-  browseURL("https://trainset.geocene.com/")
-  invisible(readline(prompt = paste0(
-    "Edit the label file data/1_pressure/labels/", gpr$gdl_id,
-    "_act_pres.csv.\n Once you've exported ", gpr$gdl_id,
-    "_act_pres-labeled.csv, press [enter] to proceed"
-  )))
+# Read previous classification. Perform only once. Write the new csv file in the data/label folder
+if (FALSE){
+  flr <- "/Users/raphael/Library/CloudStorage/Box-Box/GeoPressureMAT/data/labels/activity_label/"
+  old_csv <- read.csv(paste0(flr,gpr$gdl_id,"_act_pres-labeled.csv"))
+
+  old_csv$date <- strptime(old_csv$timestamp, "%FT%T", tz = "UTC")
+  csv_acc <- subset(old_csv, series == "act")
+  csv_pres <- subset(old_csv, series == "pres")
+
+  pam$acceleration = data.frame(
+    date = csv_acc$date,
+    act = csv_acc$value,
+    ismig = csv_acc$label==3
+  )
+
+  id_pres_match <- match(as.numeric(pam$pressure$date), as.numeric((csv_pres$date)))
+  missing_pres <- sum(is.na(id_pres_match))
+
+  pam$pressure$isoutliar <- !is.na(csv_pres$label[id_pres_match])
+
+  trainset_write(pam, pathname = "data/1_pressure/labels/", filename = paste0(pam$id, "_act_pres-labeled"))
 }
 
 # Read the label and compute the stationary info
 pam <- trainset_read(pam, "data/1_pressure/labels/")
 pam <- pam_sta(pam)
 
-# define the discrete colorscale. Used at multiple places.
-col <- rep(RColorBrewer::brewer.pal(9, "Set1"), times = ceiling((nrow(pam$sta) + 1) / 9))
-col <- col[1:(nrow(pam$sta) + 1)]
-names(col) <- levels(factor(c(0, pam$sta$sta_id)))
+if (gpr$gdl_id=="16LO"){
+  d <- pam$pressure$date
+  d[format(d, "%M") == "10"] = d[format(d, "%M") == "10"] - 10*60
+  d[format(d, "%M") == "40"] = d[format(d, "%M") == "40"] - 10*60
+  pam$pressure$date <- d
+}
 
+# define the discrete colorscale. Used at multiple places.
+col <- rep(RColorBrewer::brewer.pal(8, "Dark2"), times = ceiling(max(pam$sta$sta_id)/8))
+pam$sta$col <- col[pam$sta$sta_id]
 
 if (debug) {
   # Test 1 ----
@@ -153,7 +169,6 @@ if (debug) {
 save( # pressure_timeserie,
   pressure_prob,
   pam,
-  col,
   gpr,
   file = paste0("data/1_pressure/", gpr$gdl_id, "_pressure_prob.Rdata")
 )

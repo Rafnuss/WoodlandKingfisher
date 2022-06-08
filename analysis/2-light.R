@@ -12,10 +12,10 @@ library(lubridate)
 library(GeoLocTools)
 setupGeolocation()
 
-debug <- T
+debug <- F
 
 # Define the geolocator data logger id to use
-gdl <- "18LX"
+# gdl <- "22NO" # "16LN" "16LO" "16LP" "20IK" "22NO"
 
 # Load the pressure file, also contains gpr, pam, col
 load(paste0("data/1_pressure/", gdl, "_pressure_prob.Rdata"))
@@ -57,6 +57,35 @@ if (debug) {
   abline(v = gpr$calib_1_start, lty = 1, col = "firebrick", lwd = 1.5)
   abline(v = gpr$calib_2_end, lty = 2, col = "firebrick", lwd = 1.5)
   abline(v = gpr$calib_1_end, lty = 2, col = "firebrick", lwd = 1.5)
+}
+
+# Read previous classification. Perform only once. Wrtie the new csv file in the data/label folder
+if (FALSE){
+  flr <- "/Users/raphael/Library/CloudStorage/Box-Box/GeoPressureMAT/data/labels/twilight_label/"
+  read.csv(paste0(flr,gpr$gdl_id,"_twl-labeled.csv")) %>%
+    mutate(label= ifelse(label=="Outliar_true","label_1","")) %>%
+    write.csv(paste0("data/2_light/labels/",gpr$gdl_id,"_light-labeled.csv"))
+
+  old_csv <- read.csv(paste0(flr,gpr$gdl_id,"_twl-labeled.csv"))
+
+  timestamp = strftime(twl$twilight, "%Y-%m-%dT00:00:00.000Z", tz = "UTC")
+
+  id_match <- match(timestamp, old_csv$timestamp)
+  missing <- sum(is.na(id_match))
+
+  twl$deleted <- old_csv$label[id_match]=="Outliar_true"
+
+  write.csv(
+    data.frame(
+      series = ifelse(twl$rise, "Rise", "Set"),
+      timestamp = strftime(twl$twilight, "%Y-%m-%dT00:00:00Z", tz = "UTC"),
+      value = (as.numeric(format(twl$twilight, "%H")) * 60 + as.numeric(format(twl$twilight, "%M"))
+               + gpr$shift_k / 60 + 60 * 12) %% (60 * 24),
+      label = ifelse(twl$deleted, "Delete", "") # ifelse(is.null(twl$deleted), "", ifelse(twl$deleted, "Delete", ""))
+    ),
+    paste0("data/2_light/labels/", gpr$gdl_id, "_light-labeled.csv"),
+    row.names = FALSE
+  )
 }
 
 
@@ -178,6 +207,24 @@ pgz <- apply(g, 1, function(x) {
   approx(fit_z$x, fit_z$y, z, yleft = 0, yright = 0)$y
 })
 
+
+# Issue with large biased for 22NO at wintering site
+if (gdl=="22NO"){
+  i_s = max(twl$sta_id)
+  twl_fl <- twl %>% filter(sta_id==i_s) %>% filter(!deleted)
+  sun_last <- solar(twl_fl$twilight)
+  z_last <- refracted(zenith(sun_last, tail(pressure_timeserie,1)[[1]]$lon[1], tail(pressure_timeserie,1)[[1]]$lat[1]))
+  fit_z_last <- density(z_last, adjust = gpr$kernel_adjust, from = 60, to = 120)
+
+  pgz_last <- apply(g, 1, function(x) {
+    z <- refracted(zenith(sun_last, x[1], x[2]))
+    approx(fit_z_last$x, fit_z_last$y, z, yleft = 0, yright = 0)$y
+  })
+
+  pgz[twl_clean$sta_id==i_s,] <-pgz_last
+}
+
+
 # Define the log-linear pooling value
 w <- gpr$prob_light_w
 
@@ -239,7 +286,6 @@ if (debug) {
 # Save ----
 save(twl,
   light_prob,
-  gpr,
   z,
   fit_z,
   file = paste0("data/2_light/", gpr$gdl_id, "_light_prob.Rdata")
