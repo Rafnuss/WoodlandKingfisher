@@ -40,3 +40,9 @@ vignettes/*.pdf
 .Rproj.user
 .Rdata
 .DS_Store
+.Rbuildignore
+.RDataTmp
+
+old/*
+rosm.cache/*
+data/wind/*

@@ -1,0 +1,79 @@
+---
+title: Tag Label
+format: html
+editor: visual
+---
+
+# Tag labelling
+
+This script will guide you through the tag labelling and creation of the pressure map
+
+```{r, setup}
+# Choose the id
+id <- "16LO"
+
+# Set the directory to the project root
+# knitr::opts_knit$set(root.dir = "..")
+library(GeoPressureR)
+library(ggplot2)
+```
+
+Create tag with crop date
+
+```{r tag_create}
+tag <- tag_create(config::get("id", id),
+  crop_start = config::get("crop_start", id),
+  crop_end = config::get("crop_end", id)
+) %>%
+  tag_label()
+```
+
+```{r}
+tag <- tag_set_map(tag,
+  extent = config::get("extent", id),
+  scale = 5,
+  known = config::get("known", id),
+  include_min_duration = 0
+) |>
+  geopressure_map(max_sample = 50)
+```
+
+```{r}
+geopressureviz(tag)
+```
+
+## Update of `tag` and `pressurepath`
+
+::: callout-tip
+*Delete this block when you have read!*
+
+You can use `tag_upate()` and `pressurepath_update()` every time you've edited and exported a new label label file from trainset. You might want to start from a new tag and pressurepath variable if you encounter any problem.
+:::
+
+```{r}
+tag <- tag_update(tag)
+pressurepath <- pressurepath_update(pressurepath, tag, path = path)
+```
+
+## Pressurepath on the most likely path
+
+::: callout-tip
+*Delete this block when you have read!*
+
+This section is only applicable after you've computed the pressurepath on the most likely path (see `geopressurer.R`).
+:::
+
+Check marginal map, most-likely path and
+
+```{r, eval = F}
+geopressureviz(id)
+path <- geopressureviz_path
+```
+
+Run check 3-5
+
+```{r}
+load(glue("./data/interim/{id}.RData"))
+plot_pressurepath(pressurepath, type = "ts")
+plot_pressurepath(pressurepath, type = "hist")
+```

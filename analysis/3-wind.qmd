@@ -1,0 +1,106 @@
+---
+title: Add wind
+format: html
+editor: visual
+---
+
+This script will help you download the wind data for a `tag` and define the movement model.
+
+```{r, setup}
+# Choose the id
+id <- "16LN"
+
+# Set the directory to the project root
+# knitr::opts_knit$set(root.dir = "..")
+library(GeoPressureR)
+library(glue)
+library(job)
+```
+
+## Set-up copernicus credential
+
+If you don't have one, create account at <https://cds.climate.copernicus.eu/user/15631/edit> and retrieve your API key and UID number
+
+```{r, eval = F}
+Sys.setenv(cds_key = "Insert_your_CDS_API_KEY_here")
+Sys.setenv(cds_user = "Insert_your_CDS_UID_here")
+```
+
+## Download wind data
+
+```{r, eval=F}
+list_id <- tail(names(yaml::yaml.load_file("config.yml", eval.expr = FALSE)), -1)
+list_id <- c("16LO", "16LP", "20IK", "22NO")
+for (id in list_id) {
+  tag <- tag_create(
+    id = config::get("id", id),
+    crop_start = config::get("crop_start", id),
+    crop_end = config::get("crop_end", id)
+  ) |>
+    tag_label(quiet = TRUE) |>
+    tag_set_map(
+      extent = config::get("extent", id),
+      scale = config::get("scale", id),
+      known = config::get("known", id),
+      include_min_duration = config::get("include_min_duration", id),
+    )
+
+  job({
+    tag_download_wind(
+      tag
+      # variable = c('u_component_of_wind', 'v_component_of_wind', 'temperature', 'relative_humidity')
+    )
+  })
+}
+```
+
+Check requests at <https://cds.climate.copernicus.eu/cdsapp#!/yourrequests>
+
+## Define movement model
+
+### Add wind data
+
+If you haven't computed a graph yet
+
+```{r, eval = F}
+graph <- graph_create(
+  tag,
+  thr_likelihood = config::get("thr_likelihood", id),
+  thr_gs = config::get("thr_gs", id)
+)
+```
+
+```{r}
+graph <- graph_add_wind(
+  graph,
+  pressure = tag$pressure,
+  thr_as = config::get("thr_as", id)
+)
+```
+
+### Set movement model
+
+Check that the movement model defined in `config.yml` is adequate.
+
+```{r}
+graph <- graph_set_movement(graph,
+  bird = bird_create(config::get("scientific_name", id)),
+  low_speed_fix = config::get("movement_low_speed_fix", id)
+)
+plot_graph_movement(graph)
+```
+
+```{r}
+path_most_likely <- graph_most_likely(graph)
+edge_most_likely <- path2edge(path_most_likely, graph)
+```
+
+```{r}
+p <- ggplot(edge_most_likely, aes(x = stap_s, size = duration)) +
+  theme_bw() +
+  geom_point(aes(y = abs(gs - ws)), col = "grey") +
+  geom_point(aes(y = abs(gs)), col = "black") +
+  ylab("Speed (km/h)")
+
+plotly::ggplotly(p)
+```

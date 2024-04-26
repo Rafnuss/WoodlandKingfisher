@@ -1,0 +1,87 @@
+# Configuration file for GeoPressureR parameters
+#
+# This file stores all the parameters used by the GeoPressureR functions, following the best
+# practice to separate parameters from codes. This file is used with the config R package
+# <https://rstudio.github.io/config/> which allows to retrieve the value of each parameter
+# from your analysis files.
+#
+# This file is meant to be adapted based on your needs: feel free to add or remove parameters either
+# in the default or tag specific config.
+
+default:
+  #-- SET MAP
+  extent: !expr c(15, 38, -25, 13) #W, E, S, N
+  scale: 4
+  include_min_duration: 0
+  #-- GEOPRESSURE
+  max_sample: 250
+  margin: 40
+  sd: 2
+  thr_mask: 0.9
+  log_linear_pooling_weight: !expr \(n) 5*log(n)/n
+  #-- GEOLIGHTß
+  # twl_offset:
+  # twl_calib_adjust:
+  # twl_llp:
+  #-- GRAPH
+  thr_likelihood: 0.95
+  thr_gs: 120
+  thr_as: 80
+  #-- MOVEMENT MODEL
+  movement_type: "as"
+  movement_shape:
+  movement_scale:
+  movement_location:
+  movement_low_speed_fix: 35
+  scientific_name: "Halcyon senegaloides"
+
+16LN:
+  id: "16LN"
+  color: "#70D6FF"
+  crop_start: NULL #"2017-01-10"
+  crop_end: NULL #"2017-12-10"
+  known: !expr data.frame(
+    stap_id = c(1, -1),
+    known_lon = 28.76857325,
+    known_lat = -22.72463163)
+
+16LO:
+  id: "16LO"
+  color: "#FF70A6"
+  crop_start: "2017-01-10"
+  crop_end: "2017-12-23"
+  known: !expr data.frame(
+    stap_id = c(1, -1),
+    known_lon = 28.77132017,
+    known_lat = -22.72003858)
+
+16LP:
+  id: "16LP"
+  color: "#FF9770"
+  crop_start: "2017-01-15"
+  crop_end: "2017-12-20"
+  known: !expr data.frame(
+    stap_id = c(1, -1),
+    known_lon = 28.76930617,
+    known_lat = -22.72040289)
+
+20IK:
+  id: "20IK"
+  color: "#FFD670"
+  crop_start: "2017-12-19"
+  crop_end: "2018-12-17"
+  known: !expr data.frame(
+    stap_id = c(1, -1),
+    known_lon = 28.7814561,
+    known_lat = -22.7466829)
+
+22NO:
+  id: "22NO"
+  color: "#E9FF70"
+  crop_start: "2019-01-24"
+  crop_end: "2019-09-29"
+  known: !expr data.frame(
+    stap_id = 1,
+    known_lon = 28.7749111,
+    known_lat = -22.7254083)
+
