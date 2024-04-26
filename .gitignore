@@ -46,3 +46,4 @@ vignettes/*.pdf
 old/*
 rosm.cache/*
 data/wind/*
+output/figure_print/old/*
