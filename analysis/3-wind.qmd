@@ -1,57 +1,73 @@
 ---
-title: Add wind
-format: html
-editor: visual
+title: Download wind
+editor: source
+description: https://raphaelnussbaumer.com/GeoPressureManual/geopressuretemplate-wind.html
 ---
 
 This script will help you download the wind data for a `tag` and define the movement model.
 
-```{r, setup}
-# Choose the id
-id <- "16LN"
+::: callout-tip
+*Delete this block when you have read!*
 
-# Set the directory to the project root
-# knitr::opts_knit$set(root.dir = "..")
+-   These scripts should be adapted based on your project, but the same script should run for all your tags. You can always check [the original version online](https://github.com/Rafnuss/GeoPressureTemplate/blob/main/analysis/1-label.qmd).
+-   Make sure you've read the [GeoPressureManual](https://raphaelnussbaumer.com/GeoPressureManual), in particular the [instructions on wind data](https://raphaelnussbaumer.com/GeoPressureManual/trajectory-with-wind.html#download-wind-data), before running this script
+-   Nothing is saved at the end of the script and it is meant to be like that. Only wind file and config.yml should be edited. Use `geopressure.R` for the final run.
+:::
+
+```{r setup}
+id <- "18LX"
+
+knitr::opts_knit$set(root.dir = here::here())
 library(GeoPressureR)
-library(glue)
 library(job)
 ```
 
-## Set-up copernicus credential
+## Set Copernicus credentials
 
-If you don't have one, create account at <https://cds.climate.copernicus.eu/user/15631/edit> and retrieve your API key and UID number
+::: callout-tip
+*Delete this block when you have read!* 
 
-```{r, eval = F}
-Sys.setenv(cds_key = "Insert_your_CDS_API_KEY_here")
-Sys.setenv(cds_user = "Insert_your_CDS_UID_here")
+If you don't yet have one, create a Copernicus account at <https://cds.climate.copernicus.eu/user/15631/edit> and retrieve your API key and UID number.
+
+Once created, you can retrieve your API key on https://cds.climate.copernicus.eu/user/ and save them in your environment file (i.e., `.Renviron`). You can open this file with `usethis::edit_r_environ()` and add:
+
+```bash
+cds_token =  "{Personal Access Token}"
+```
+:::
+
+## Create tag
+
+Make sure you have already created the label file with the "1-label.qmd" script.
+
+```{r, cache = TRUE, message=FALSE}
+tag <- tag_create(
+  id,
+  crop_start = config::get("tag_create", id)$crop_start,
+  crop_end = config::get("tag_create", id)$crop_end,
+  quiet = TRUE
+) |>
+  tag_label(quiet = TRUE) |>
+  tag_set_map(
+    extent = config::get("tag_set_map", id)$extent,
+    scale = config::get("tag_set_map", id)$scale,
+    known = config::get("tag_set_map", id)$known,
+    include_min_duration = config::get("tag_set_map", id)$include_min_duration
+  ) |>
+  geopressure_map() |>
+  twilight_create() |>
+  twilight_label_read() |>
+  geolight_map()
 ```
 
 ## Download wind data
 
-```{r, eval=F}
-list_id <- tail(names(yaml::yaml.load_file("config.yml", eval.expr = FALSE)), -1)
-list_id <- c("16LO", "16LP", "20IK", "22NO")
-for (id in list_id) {
-  tag <- tag_create(
-    id = config::get("id", id),
-    crop_start = config::get("crop_start", id),
-    crop_end = config::get("crop_end", id)
-  ) |>
-    tag_label(quiet = TRUE) |>
-    tag_set_map(
-      extent = config::get("extent", id),
-      scale = config::get("scale", id),
-      known = config::get("known", id),
-      include_min_duration = config::get("include_min_duration", id),
-    )
+The [job package](https://lindeloev.github.io/job) allows to download the wind data in the background and let your R console free to use.
 
-  job({
-    tag_download_wind(
-      tag
-      # variable = c('u_component_of_wind', 'v_component_of_wind', 'temperature', 'relative_humidity')
-    )
-  })
-}
+```{r, eval = FALSE}
+job({
+  tag_download_wind(tag)
+})
 ```
 
 Check requests at <https://cds.climate.copernicus.eu/cdsapp#!/yourrequests>
@@ -60,13 +76,11 @@ Check requests at <https://cds.climate.copernicus.eu/cdsapp#!/yourrequests>
 
 ### Add wind data
 
-If you haven't computed a graph yet
-
-```{r, eval = F}
+```{r}
 graph <- graph_create(
   tag,
-  thr_likelihood = config::get("thr_likelihood", id),
-  thr_gs = config::get("thr_gs", id)
+  thr_likelihood = config::get("graph_create", id)$thr_likelihood,
+  thr_gs = config::get("graph_create", id)$thr_gs
 )
 ```
 
@@ -74,7 +88,7 @@ graph <- graph_create(
 graph <- graph_add_wind(
   graph,
   pressure = tag$pressure,
-  thr_as = config::get("thr_as", id)
+  thr_as = config::get("graph_add_wind", id)$thr_as
 )
 ```
 
@@ -84,23 +98,13 @@ Check that the movement model defined in `config.yml` is adequate.
 
 ```{r}
 graph <- graph_set_movement(graph,
-  bird = bird_create(config::get("scientific_name", id)),
-  low_speed_fix = config::get("movement_low_speed_fix", id)
+  bird = bird_create(config::get("bird", id)$species_name)
 )
+```
+
+Check the movement model
+
+```{r}
 plot_graph_movement(graph)
 ```
 
-```{r}
-path_most_likely <- graph_most_likely(graph)
-edge_most_likely <- path2edge(path_most_likely, graph)
-```
-
-```{r}
-p <- ggplot(edge_most_likely, aes(x = stap_s, size = duration)) +
-  theme_bw() +
-  geom_point(aes(y = abs(gs - ws)), col = "grey") +
-  geom_point(aes(y = abs(gs)), col = "black") +
-  ylab("Speed (km/h)")
-
-plotly::ggplotly(p)
-```

@@ -1,87 +1,91 @@
 # Configuration file for GeoPressureR parameters
 #
 # This file stores all the parameters used by the GeoPressureR functions, following the best
-# practice to separate parameters from codes. This file is used with the config R package
-# <https://rstudio.github.io/config/> which allows to retrieve the value of each parameter
-# from your analysis files.
+# practice to separate parameters from codes. These parameters are retrieved using config::get() of
+# the config R package <https://rstudio.github.io/config/>.
 #
-# This file is meant to be adapted based on your needs: feel free to add or remove parameters either
-# in the default or tag specific config.
+# This file is meant to be adapted based on your needs: feel free to add parameters either in the
+# default (applied to all tags) or for each tag seperatly (overwrite default). It is recommended to
+# specify all parameters used, even if you use the default value.
+#
+# You can check the documentation of each function to learn what each of these parameters are doing
+# as well as reading https://raphaelnussbaumer.com/GeoPressureManual/geopressuretemplate-workflow.html
 
 default:
-  #-- SET MAP
-  extent: !expr c(15, 38, -25, 13) #W, E, S, N
-  scale: 4
-  include_min_duration: 0
-  #-- GEOPRESSURE
-  max_sample: 250
-  margin: 40
-  sd: 2
-  thr_mask: 0.9
-  log_linear_pooling_weight: !expr \(n) 5*log(n)/n
-  #-- GEOLIGHTß
-  # twl_offset:
-  # twl_calib_adjust:
-  # twl_llp:
-  #-- GRAPH
-  thr_likelihood: 0.95
-  thr_gs: 120
-  thr_as: 80
-  #-- MOVEMENT MODEL
-  movement_type: "as"
-  movement_shape:
-  movement_scale:
-  movement_location:
-  movement_low_speed_fix: 35
-  scientific_name: "Halcyon senegaloides"
+  tag_set_map: # ?tag_set_map()
+    extent: [15, 38, -25, 13] # [W, E, S, N]
+    scale: 4 # 1 (min) -> 1° ; 2 -> 0.5° ; 5 -> 0.25° ; 10 (max) -> 0.1°
+    include_min_duration: 0 # in hours
+    known:
+      stap_id: [1, -1] # -1 -> last stap
+      known_lon: 28.76857325
+      known_lat: -22.72463163
+  geopressure_map: # ?geopressure_map()
+    max_sample: 500
+    margin: 40 # in m
+    sd: 2
+    thr_mask: 0.9
+    log_linear_pooling_weight: !expr \(n) 5*log(n)/n
+  geolight_map: # ?geolight_map()
+    twl_calib_adjust: 1.4
+    twl_llp: !expr \(n) log(n)/n
+  graph_create: # ?graph_create()
+    thr_likelihood: 0.95
+    thr_gs: 120 # km/h
+    # likelihood: NULL # Best to leave NULL.
+  graph_add_wind:
+    thr_as: 80 # km/h
+  graph_set_movement: # ?graph_set_movement()
+    type: "as"
+    # method: "gamma"
+    # shape: 7 # only for gamma
+    # scale: 7
+    # location: 40 # only for logistic
+    low_speed_fix: 35 # km/h
+  bird_create:
+    scientific_name: "Halcyon senegaloides"
+  graph_simulation: # ?graph_simulation()
+    nj: 100
+  pressurepath_create: # ?pressurepath_create()
+    variable: ["altitude", "surface_pressure"]
+    # solar_dep: 0
+  geopressuretemplate: # ?geopressuretemplate()
+    likelihood: ["map_pressure", "map_light"] #  for nothing
+    outputs: ["marginal", "most_likely", "simulation"]
+    pressurepath: ["most_likely"] # "geopressureviz"
 
 16LN:
-  id: "16LN"
   color: "#70D6FF"
-  crop_start: NULL #"2017-01-10"
-  crop_end: NULL #"2017-12-10"
-  known: !expr data.frame(
-    stap_id = c(1, -1),
-    known_lon = 28.76857325,
-    known_lat = -22.72463163)
+  tag_create:
+    crop_start: "2017-01-10"
+    crop_end: "2017-12-10"
 
 16LO:
-  id: "16LO"
   color: "#FF70A6"
-  crop_start: "2017-01-10"
-  crop_end: "2017-12-23"
-  known: !expr data.frame(
-    stap_id = c(1, -1),
-    known_lon = 28.77132017,
-    known_lat = -22.72003858)
+  tag_create:
+    crop_start: "2017-01-10"
+    crop_end: "2017-12-23"
 
 16LP:
-  id: "16LP"
   color: "#FF9770"
-  crop_start: "2017-01-15"
-  crop_end: "2017-12-20"
-  known: !expr data.frame(
-    stap_id = c(1, -1),
-    known_lon = 28.76930617,
-    known_lat = -22.72040289)
+  tag_create:
+    crop_start: "2017-01-15"
+    crop_end: "2017-12-20"
 
 20IK:
-  id: "20IK"
   color: "#FFD670"
-  crop_start: "2017-12-19"
-  crop_end: "2018-12-17"
-  known: !expr data.frame(
-    stap_id = c(1, -1),
-    known_lon = 28.7814561,
-    known_lat = -22.7466829)
+  tag_create:
+    crop_start: "2017-12-19"
+    crop_end: "2018-12-17"
 
 22NO:
-  id: "22NO"
   color: "#E9FF70"
-  crop_start: "2019-01-24"
-  crop_end: "2019-09-29"
-  known: !expr data.frame(
-    stap_id = 1,
-    known_lon = 28.7749111,
-    known_lat = -22.7254083)
+  tag_create:
+    crop_start: "2019-01-24"
+    crop_end: "2019-09-29"
+  tag_set_map:
+    known:
+      stap_id: 1
+      known_lon: 28.76857325
+      known_lat: -22.72463163
 
