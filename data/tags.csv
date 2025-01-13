@@ -1,26 +1,26 @@
-﻿tag_id,scientific_name,ring_number
-16KY,Halcyon senegalensis,4A46395
-20JP,Halcyon senegalensis,4A46395
-22NM,Halcyon senegalensis,4A46395
-16KJ,Halcyon senegalensis,4A46399
-16LP,Halcyon senegalensis,E46102
-22NA,Halcyon senegalensis,E46108
-20IT,Halcyon senegalensis,E46111
-16KV,Halcyon senegalensis,E46113
-16KX,Halcyon senegalensis,E46113
-22NN,Halcyon senegalensis,E46115
-16LO,Halcyon senegalensis,E46118
-16LN,Halcyon senegalensis,E46126
-20JO,Halcyon senegalensis,E46130
-20IP,Halcyon senegalensis,E46131
-20IK,Halcyon senegalensis,E46132
-22NR,Halcyon senegalensis,E46132
-20IQ,Halcyon senegalensis,E46134
-20IC,Halcyon senegalensis,E46136
-20IR,Halcyon senegalensis,E46142
-20IL,Halcyon senegalensis,E46143
-22NP,Halcyon senegalensis,E57801
-22PA,Halcyon senegalensis,E57802
-22MW,Halcyon senegalensis,E57804
-22NQ,Halcyon senegalensis,E57805
-22NO,Halcyon senegalensis,E46126
+﻿tag_id,ring_number,scientific_name,manufacturer,model,firmware,weight,attachment_type,readout_method,tag_comments
+16KY,4A46395,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.58,leg harness|material:cord|attachement:potting,,
+20JP,4A46395,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.55,leg harness|material:cord|attachement:tubes,,
+22NM,4A46395,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.76,leg harness|material:cord|attachement:tubes,,
+16KJ,4A46399,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.6,leg harness|material:cord|attachement:potting,,
+16LP,E46102,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.61,leg harness|material:cord|attachement:potting,,
+22NA,E46108,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.74,leg harness|material:cord|attachement:tubes,,
+20IT,E46111,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.62,leg harness|material:cord|attachement:tubes,,
+16KV,E46113,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.5599999,leg harness|material:cord|attachement:potting,,
+16KX,E46113,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.6,leg harness|material:cord|attachement:potting,,
+22NN,E46115,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.8200001,leg harness|material:cord|attachement:tubes,,
+16LO,E46118,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.6,leg harness|material:cord|attachement:potting,,
+16LN,E46126,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.6,leg harness|material:cord|attachement:potting,,
+20JO,E46130,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.51,leg harness|material:cord|attachement:tubes,,
+20IP,E46131,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.58,leg harness|material:cord|attachement:tubes,,
+20IK,E46132,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.45,leg harness|material:cord|attachement:tubes,,
+22NR,E46132,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.75,leg harness|material:cord|attachement:tubes,,
+20IQ,E46134,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.5700001,leg harness|material:cord|attachement:tubes,,
+20IC,E46136,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.51,leg harness|material:cord|attachement:tubes,,
+20IR,E46142,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.51,leg harness|material:cord|attachement:tubes,,
+20IL,E46143,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.55,leg harness|material:cord|attachement:tubes,,
+22NP,E57801,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.76,leg harness|material:cord|attachement:tubes,,
+22PA,E57802,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.78,leg harness|material:cord|attachement:tubes,,
+22MW,E57804,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.79,leg harness|material:cord|attachement:tubes,,
+22NQ,E57805,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.73,leg harness|material:cord|attachement:tubes,,
+22NO,E46126,Halcyon senegalensis,Swiss Ornithological Institute,GDL3pam-v2.3,FW_GDL3pam_V2.3.1,1.7,leg harness|material:cord|attachement:tubes,,
