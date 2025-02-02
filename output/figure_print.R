@@ -676,28 +676,18 @@ library(GeoPressureR)
 library(suntools)
 
 # read flights
-flights <- read_csv(file = "output/summary_flight.csv")
-
+flights <- read_csv(file = "output/summary_flight.csv") %>%
+  mutate(
+    start = as.POSIXct(start, format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
+    end = as.POSIXct(end, format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
+  )
 
 # Load all pressurepath, compute sunrise and sunset per day and combine in a single data.frame for all tracks
 list_id <- tail(names(yaml::yaml.load_file("config.yml", eval.expr = FALSE)), -1)
 pp <- purrr::map(list_id, \(id){
   load(glue::glue("./data/interim/{id}.RData"))
 
-  pressurepath$sunset <- sunriset(
-    matrix(c(pressurepath$lon, pressurepath$lat), ncol = 2),
-    dateTime = pressurepath$date,
-    direction = "sunset"
-  )$day_frac * 24
-
-  pressurepath$sunrise <- sunriset(
-    matrix(c(pressurepath$lon, pressurepath$lat), ncol = 2),
-    dateTime = pressurepath$date,
-    direction = "sunrise",
-    POSIXct.out = TRUE
-  )$day_frac * 24
-
-  pp <- pressurepath %>%
+  pp <- pressurepath_most_likely %>%
     mutate(
       date = round_date(date, "day")
     ) %>%
@@ -719,7 +709,14 @@ pp <- purrr::map(list_id, \(id){
   pp$status[(pp$date > (min(fpre$start) - days(5))) & (pp$date < (max(fpre$end) + days(5)))] <- "pre-breeding"
   # pp <- pp %>% filter(status != "")
   pp
-}) %>% bind_rows()
+}) %>%
+  bind_rows() %>%
+  mutate(
+    sunrise = as.POSIXct(sunrise, format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
+    sunset = as.POSIXct(sunset, format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
+    sunrise_decimal = hour(sunrise) + minute(sunrise) / 60 + second(sunrise) / 60 / 60,
+    sunset_decimal = hour(sunset) + minute(sunset) / 60 + second(sunset) / 60 / 60
+  )
 
 ppy <- pp %>%
   mutate(
@@ -728,8 +725,6 @@ ppy <- pp %>%
 
 tmp <- flights %>%
   mutate(
-    start = as.POSIXct(start, format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
-    end = as.POSIXct(end, format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
     middle_date = round_date(start + difftime(end, start), "day"),
     start_hms = hms(format(start, "%H:%M:%S")),
     end_hms = hms(format(end, "%H:%M:%S")),
@@ -746,11 +741,11 @@ t_h <- \(x) (x + 12 + 2) %% 24
 
 
 ggplot() +
-  geom_ribbon(data = ppy, aes(x = date, ymin = t_h(sunset), ymax = t_h(sunrise)), colour = "grey", alpha = 0.1) +
+  geom_ribbon(data = ppy, aes(x = date, ymin = t_h(sunset_decimal), ymax = t_h(sunrise_decimal)), colour = "grey", alpha = 0.1) +
   geom_segment(data = tmp %>% filter(congo > 0), aes(x = middle_date, y = t_h(start_decimal), yend = t_h(end_decimal)), colour = "darkgreen") +
   geom_segment(data = tmp %>% filter(congo == 0), aes(x = middle_date, y = t_h(start_decimal), yend = t_h(end_decimal))) +
-  geom_path(data = ppy, aes(x = date, y = t_h(sunrise))) +
-  geom_path(data = ppy, aes(x = date, y = t_h(sunset))) +
+  geom_path(data = ppy, aes(x = date, y = t_h(sunrise_decimal))) +
+  geom_path(data = ppy, aes(x = date, y = t_h(sunset_decimal))) +
   scale_y_continuous(
     breaks = seq(0, 24, 2),
     minor_breaks = seq(0, 24, 1),
@@ -779,3 +774,48 @@ ggplot() +
 
 
 ggsave("output/figure_print/flight_timing.eps", device = "eps", width = 8, height = 12)
+
+
+
+
+
+flights$dusk <- crepuscule(
+  matrix(c(flights$lon_s, flights$lat_s), ncol = 2),
+  dateTime = round_date(flights$start, "day")-days(1),
+  solarDep = 6,
+  direction = "dusk",
+  POSIXct.out = TRUE
+)$time
+
+flights <- flights %>% mutate(
+  since_dusk = as.numeric(flights$start - flights$dusk,units="mins"),
+  since_dusk_cat = cut(since_dusk, breaks = seq(-15, 700, by = 15), include.lowest = TRUE, right = FALSE),
+  duration_category = cut(duration, breaks = c(0, 1, 3, 5, 10, 12), include.lowest = TRUE, right = FALSE)
+)
+
+flight_first <- flights %>%
+  group_by(tag_id, status) %>%
+  arrange(stap_s) %>%
+  slice(1) %>%
+  group_by(since_dusk_cat) %>%
+  summarise(
+    n = n(),
+    duration_category = first(duration_category)
+  )
+
+flights %>%
+  ggplot(aes(x = since_dusk_cat, fill= duration_category)) +
+  geom_bar() +
+  geom_point(data = flight_first, aes(y=n)) +
+  labs(
+    title = "Histogram of Time Differences",
+    x = "Departure since civil twilight (6°) (minutes)",
+    y = "Number of flight",
+    fill = " Duration category (hr)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
