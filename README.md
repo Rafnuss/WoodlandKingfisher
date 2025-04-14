@@ -12,6 +12,6 @@ Code and data:
 
 Publication:
 
-> Rime, Y., Osinubi, S. T., Liechti, F., Helm, B., Nussbaumer, R. Cross-hemisphere long-distance movements migration of African birds matching with seasonal niche oftracking two rainy seasons in an intra-African migratory bird
+> Rime Yann, Osinubi Samuel Temidayo, Liechti Felix, Helm Barbara and Nussbaumer Raphaël 2025Small intra-tropical long-distance migratory birds track rainy seasons across hemispheres *Proc. R. Soc. B.* **29**:220242633. http://doi.org/10.1098/rspb.2024.2633
 
 ![alt text](output/figure_print/movevis_faster.gif)
