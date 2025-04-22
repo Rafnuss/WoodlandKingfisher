@@ -12,7 +12,7 @@ pkg <- add_gldp_geopressuretemplate(pkg)
 validate_gldp(pkg)
 
 # New version
-pkg$version <- "v1.2.0"
+pkg$version <- "v1.2.1"
 pkg <- pkg %>% update_gldp_metadata()
 z$setVersion(pkg$version)
 
